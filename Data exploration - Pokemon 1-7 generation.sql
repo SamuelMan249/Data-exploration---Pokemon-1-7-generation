@@ -13,7 +13,7 @@ and provide information from a database on various species in Pokemon (Up until 
 Select *
 From Pokedex
 
--- Data Cleaning -- Standardizing the data from large float values into 2 decimal points --
+-- Data Cleaning -- Standardizing the data from large float values into 2 decimal points and changing stat numbers from tinyint to int --
 
 Alter Table Pokedex
 Alter Column height_m decimal(10,2) 
@@ -23,6 +23,24 @@ Alter Column percentage_male decimal(10,2)
 
 Alter Table Pokedex
 Alter Column weight_kg decimal(10,2) 
+
+Alter Table Pokedex
+Alter Column hp int
+
+Alter Table Pokedex
+Alter Column attack int
+
+Alter Table Pokedex
+Alter Column sp_attack int
+
+Alter Table Pokedex
+Alter Column defense int
+
+Alter Table Pokedex
+Alter Column sp_defense int
+
+Alter Table Pokedex
+Alter Column speed int
 
 --Data Exploration, the pokemon dataset--
 
@@ -119,8 +137,77 @@ Select *
 From Pokedex
 Where base_total > 130 AND abilities like '%intimidate%' AND ((type1 = 'steel' AND type2 = 'fairy') OR (type1 = 'fairy' AND type2 = 'steel')) 
 
+-- First Pokemon Chosen - (Pokedex_number) 303 -- Mawile -- Best Type Resistances & Desired Ability 'intimidate'
+
+--  Check for the Highest Attack Pokemon and check for legendaries (Legendaries are not allowed in some tournements)
+
+Select pokedex_number, name, attack, type1, type2, is_legendary
+From Pokedex
+Where is_legendary = 0
+Order by attack DESC
+
+-- Second Choice Pokemon - (Pokedex_number) 214 -- Heracross
+
+-- Highest base total pokemon --   
+
+Select pokedex_number, name, base_total, type1, type2, is_legendary, abilities
+From Pokedex
+Where is_legendary = 0
+Order by base_total DESC
+
+--Thrid Pokemon -  (Pokedex_number) 248 -- 'Tyranitar' higher stats can contribute to best offense and defenses --
+
+-- Looking for a Balance between Speical attack and speed with the ability of speed boost --
+
+Select pokedex_number, name, type1, type2, abilities, hp, attack, sp_attack, defense, sp_defense, speed, is_legendary, (sp_attack+speed) as 'Overall sp_attack+speed'
+From pokedex
+Where abilities like '%speed boost%' and is_legendary = 0
+Order by 'Overall sp_attack+speed' DESC 
+
+-- Fourth Pokemon -  (Pokedex_number) 257 -- Blaziken -- 
+
+-- Looking for a highly defensive pokemon, high hp, defense and sp_defense with low speed -- 
+
+Select pokedex_number, name, type1, type2, abilities, hp, attack, sp_attack, defense, sp_defense, speed, is_legendary, (hp+defense+sp_defense) AS 'Overall Defensive Stats'
+From pokedex
+Where abilities like '%sturdy%' and is_legendary = 0
+Order by 'Overall Defensive Stats' DESC 
+
+-- Fifth pokemon - (Pokedex_number) 213 -- Shuckle
+
+-- Fastest Pokemon with Prankster (Give priority to any status move used by pokemon)
+
+Select pokedex_number, name, type1, type2, abilities, hp, attack, sp_attack, defense, sp_defense, speed, is_legendary
+From Pokedex
+Where abilities like '%prankster%' and is_legendary = 0
+Order by speed DESC
+
+-- The final Pokemon will be (Pokedex_number) 547 -- Whimsicott -- 
+
+-- Retieve data on the perfect pokemon team -- 
+
+select pokedex_number, name, abilities, type1, type2, hp, attack, sp_attack, defense, sp_defense, speed, generation, is_legendary 
+From Pokedex
+Where pokedex_number In (303, 214, 248, 257, 213, 547)
+Order by pokedex_number
+
+-- Retieve all data on the perfect pokemon team
+
+select *
+From Pokedex
+Where pokedex_number In (303, 214, 248, 257, 213, 547)
+Order by pokedex_number
+
+-- Create View of the perfect team for later use -- 
+
+
+Create View ThePerfectPokemonTeam AS
+select pokedex_number, name, abilities, type1, type2, hp, attack, sp_attack, defense, sp_defense, speed, generation, is_legendary 
+From Pokedex
+Where pokedex_number In (303, 214, 248, 257, 213, 547)
 
 -- Creating View to store data for later visualizations -- 
+
 Create View Pokemon_Stats AS
 Select name, hp, attack, sp_attack, defense, sp_defense, speed, base_total
 From Pokedex
